@@ -155,12 +155,13 @@ export default {
     created_at: '创建时间'
   },
   permissions: {
-    name: '接口地址',
-    url: '菜单路径',
-    display_name: '展示名称',
+    component: '组件地址',
+    url: '接口地址',
+    title: '展示名称',
     icon: '权限图标',
     created_at: '创建时间',
-    parent_id: '上级菜单'
+    parent_id: '上级菜单',
+    path: '显示路径'
   },
   roles: {
     name: '角色名称',

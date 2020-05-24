@@ -1,16 +1,15 @@
 import request from '@/utils/request'
 
-export function fetchList(query) {
+export function fetchList() {
   return request({
-    url: '/Permission/permissionList',
-    method: 'get',
-    params: query
+    url: '/permission/getAll',
+    method: 'get'
   })
 }
 
 export function createPermission(data) {
   return request({
-    url: '/Permission/addPermission',
+    url: '/permission/add',
     method: 'post',
     data
   })
@@ -18,12 +17,18 @@ export function createPermission(data) {
 
 export function updatePermission(data) {
   return request({
-    url: '/Permission/updatePermission',
+    url: '/permission/update',
     method: 'post',
     data
   })
 }
-
+export function deletePermission(id) {
+  return request({
+    url: '/permission/delete',
+    method: 'get',
+    params: { id }
+  })
+}
 export function updatePermissionStatus(data) {
   return request({
     url: '/Permission/updatePermissionStatus',

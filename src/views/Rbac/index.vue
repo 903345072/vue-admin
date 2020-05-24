@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-button v-permission="['0000']" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
+      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         {{ $t('table.add') }}
       </el-button>
     </div>
@@ -18,14 +18,9 @@
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
       @sort-change="sortChange"
     >
-      <el-table-column :label="$t('permissions.display_name')" width="150">
+      <el-table-column :label="$t('permissions.component')" align="right" class-name="status-col" width="200">
         <template slot-scope="{row}">
-          {{ row.display_name }}
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('permissions.name')" class-name="status-col" width="100">
-        <template slot-scope="{row}">
-          {{ row.name }}
+          {{ row.component }}
         </template>
       </el-table-column>
       <el-table-column :label="$t('permissions.url')" class-name="status-col" width="200">
@@ -33,12 +28,17 @@
           {{ row.url }}
         </template>
       </el-table-column>
-      <el-table-column :label="$t('permissions.created_at')" class-name="status-col" min-width="100">
+      <el-table-column :label="$t('permissions.path')" class-name="status-col" width="200">
         <template slot-scope="{row}">
-          {{ row.created_at }}
+          {{ row.path }}
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.actions')" align="center" width="430" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('permissions.title')" class-name="status-col" width="200">
+        <template slot-scope="{row}">
+          {{ row.title }}
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('table.actions')" align="center" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             {{ $t('table.edit') }}
@@ -51,20 +51,20 @@
     </el-table>
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="120px" style="width: 400px; margin-left:50px;">
-        <el-form-item :label="$t('permissions.name')" prop="name">
-          <el-input v-model="temp.name" />
+        <el-form-item :label="$t('permissions.component')" prop="name">
+          <el-input v-model="temp.component" />
         </el-form-item>
-        <el-form-item :label="$t('permissions.display_name')" prop="price">
-          <el-input v-model="temp.display_name" />
-        </el-form-item>
-        <el-form-item :label="$t('permissions.url')" prop="price_max">
+        <el-form-item :label="$t('permissions.url')" prop="price">
           <el-input v-model="temp.url" />
         </el-form-item>
-        <el-form-item :label="$t('permissions.icon')" prop="icon">
-          <el-input v-model="temp.icon" />
+        <el-form-item :label="$t('permissions.title')" prop="price_max">
+          <el-input v-model="temp.title" />
         </el-form-item>
-        <el-form-item :label="$t('permissions.parent_id')" prop="parent_id">
-          <el-cascader v-model="ddd" :options="list" :show-all-levels="false" :props="{checkStrictly: true}" @change="getParentId" />
+        <el-form-item :label="$t('permissions.path')" prop="price_max">
+          <el-input v-model="temp.path" />
+        </el-form-item>
+        <el-form-item :label="$t('permissions.parent_id')" prop="title">
+          <el-cascader v-model="ddd" :options="list" :show-all-levels="false" :props="optionProps" @change="getParentId" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -90,7 +90,7 @@
 </template>
 
 <script>
-import { fetchList, createPermission, updatePermission, updatePermissionStatus } from '@/api/permission'
+import { fetchList, createPermission, updatePermission, deletePermission } from '@/api/permission'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 
@@ -125,7 +125,14 @@ export default {
   },
   data() {
     return {
+      typeOptions: [],
       ddd: [],
+      optionProps: {
+        value: 'id',
+        label: 'title',
+        children: 'children',
+        checkStrictly: true
+      },
       form: {
         category: ['zhinan', 'shejiyuanze', 'yizhi']
       },
@@ -149,8 +156,11 @@ export default {
       showReviewer: false,
       temp: {
         id: undefined,
-        status: 0,
-        parent_id: undefined
+        component: undefined,
+        path: undefined,
+        title: undefined,
+        parent_id: undefined,
+        url: undefined
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -177,12 +187,28 @@ export default {
     },
     getList() {
       this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-        // Just to simulate the time of the request
+      fetchList().then(response => {
+        this.list = response.data
+        const arrsa = []
+        if (this.temp.id) {
+          const checks_ = this.getAllParent(arrsa, this.list, this.temp.parent_id)
+          this.ddd = checks_
+          this.setDisable(this.list, this.temp.id)
+        }
         this.listLoading = false
       })
+    },
+    getAllParent(arrs, datas_, cur_id) {
+      datas_.forEach(v => {
+        if (v.id === cur_id) {
+          arrs.unshift(v.id)
+          this.getAllParent(arrs, this.list, v.parent_id)
+        }
+        if (v.children.length > 0) {
+          this.getAllParent(arrs, v.children, cur_id)
+        }
+      })
+      return arrs
     },
     opStatus(is_open) {
       const statusMap_3 = {
@@ -196,12 +222,12 @@ export default {
       this.getList()
     },
     handleModifyStatus(row) {
-      updatePermissionStatus({ id: row.id }).then(response => {
+      deletePermission(row.id).then(response => {
+        this.getList()
         this.$message({
           message: '操作成功',
           type: 'success'
         })
-        row.status = row.status === 0 ? 1 : 0
       })
     },
     sortChange(data) {
@@ -224,9 +250,11 @@ export default {
       }
     },
     handleCreate() {
+      this.ddd = []
       this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
+      this.getList()
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
@@ -253,17 +281,30 @@ export default {
       this.ddd = []
       this.temp = Object.assign({}, row) // copy obj
       this.dialogStatus = 'update'
+      this.getList()
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
     },
-    cnStatus(status) {
-      const statusMap_15 = {
-        0: '开启',
-        1: '关闭'
-      }
-      return statusMap_15[status]
+    setDisable(datas, current_id) {
+      datas.forEach(v => {
+        if (v.id === current_id) {
+          v.disabled = 'disabled'
+          v.disabled = true
+        }
+        this.setDisable_(v.children)
+      })
+    },
+    setDisable_(data_) {
+      data_.forEach(v => {
+        v.disabled = 'disabled'
+        v.disabled = true
+        console.log(222)
+        if (v.children.length > 0) {
+          this.setDisable_(v.children)
+        }
+      })
     },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {

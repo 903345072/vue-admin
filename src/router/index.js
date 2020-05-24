@@ -94,58 +94,28 @@ export const constantRoutes = [
       }
     ]
   },
-  {
-    path: '/seat',
-    component: Layout,
-    redirect: '/Seat',
-    alwaysShow: true,
-    meta: { title: '座位管理', icon: 'seat', affix: true },
-    children: [
-      {
-        path: 'list',
-        component: () => import('@/views/Seat/index'),
-        name: 'SeatList',
-        meta: { title: '座位列表', icon: '', affix: true }
-      }
-    ]
-  },
-  {
-    path: '/discountCard',
-    component: Layout,
-    redirect: '/discountCard',
-    alwaysShow: true,
-    meta: { title: '优惠券', icon: 'quan', affix: true },
-    children: [
-      {
-        path: 'list',
-        component: () => import('@/views/Quan/index'),
-        name: 'cardList',
-        meta: { title: '优惠券列表', icon: '', affix: true }
-      }
-    ]
-  },
-  {
-    path: '/rbac',
-    component: Layout,
-    redirect: '/rbac',
-    alwaysShow: true,
-    meta: { title: '权限管理', icon: 'quan', affix: true },
-    children: [
-      {
-        path: 'permission',
-        component: () => import('@/views/Rbac/index'),
-        name: 'per',
-        meta: { title: '菜单列表', icon: '', affix: true }
-      },
-      {
-        path: 'role',
-        component: () => import('@/views/role/index'),
-        name: 'role',
-        meta: { title: '角色列表', icon: '', affix: true }
-      }
-
-    ]
-  },
+  // {
+  //   path: '/rbac',
+  //   component: Layout,
+  //   redirect: '/rbac',
+  //   alwaysShow: true,
+  //   meta: { title: '权限管理', icon: 'quan', affix: true },
+  //   children: [
+  //     {
+  //       path: 'permission',
+  //       component: () => import('@/views/Rbac/index'),
+  //       name: 'per',
+  //       meta: { title: '菜单列表', icon: '', affix: true }
+  //     },
+  //     {
+  //       path: 'role',
+  //       component: () => import('@/views/role/index'),
+  //       name: 'role',
+  //       meta: { title: '角色列表', icon: '', affix: true }
+  //     }
+  //
+  //   ]
+  // },
   {
     path: '/documentation',
     component: Layout,

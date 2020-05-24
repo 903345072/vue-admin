@@ -57,15 +57,17 @@ const actions = {
 }
 
 function dataArrayToRoutes(data) {
+  console.log(data)
   const res = []
   data.forEach(item => {
     const tmp = { ...item }
     if (tmp.component === 'Layout') {
+      console.log(tmp.component)
       tmp.component = Layout
     } else {
       let sub_view = tmp.component
       sub_view = sub_view.replace(/^\/*/g, '')
-      tmp.component = () => import(`@/views/${sub_view}`)
+      tmp.component = (resolve) => require([`@/views/${sub_view}`], resolve)
     }
     if (tmp.children) {
       tmp.children = dataArrayToRoutes(tmp.children)

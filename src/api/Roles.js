@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function fetchList(query) {
   return request({
-    url: '/role/roleList',
+    url: '/role/get',
     method: 'get',
     params: query
   })
@@ -10,7 +10,7 @@ export function fetchList(query) {
 
 export function createCard(data) {
   return request({
-    url: '/role/addRole',
+    url: '/role/add',
     method: 'post',
     data
   })
@@ -18,7 +18,7 @@ export function createCard(data) {
 
 export function updateRole(data) {
   return request({
-    url: '/role/updateRole',
+    url: '/role/update',
     method: 'post',
     data
   })
@@ -26,8 +26,8 @@ export function updateRole(data) {
 
 export function updateCardStatus(data) {
   return request({
-    url: '/DiscountCard/updateCardStatus',
-    method: 'post',
-    data
+    url: '/role/delete',
+    method: 'get',
+    params: data
   })
 }

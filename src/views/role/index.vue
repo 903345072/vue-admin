@@ -1,11 +1,11 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.name" :placeholder="$t('roles.name')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.role_name" :placeholder="$t('roles.name')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         {{ $t('table.search') }}
       </el-button>
-      <el-button v-permission="['0000']" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
+      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         {{ $t('table.add') }}
       </el-button>
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
@@ -28,25 +28,18 @@
           <span>{{ scope.row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('roles.name')" width="100">
+      <el-table-column :label="$t('roles.name')">
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.name }}</span>
+          <span class="link-type" @click="handleUpdate(row)">{{ row.role_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('roles.description')" class-name="status-col" width="100">
-        <template slot-scope="{row}">
-          <span>{{ row.description }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('roles.created_at')" class-name="status-col" min-width="250px">
-        <template slot-scope="{row}">
-          {{ row.created_at }}
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.actions')" align="center" width="430" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('table.actions')" width="400" align="center" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             {{ $t('table.edit') }}
+          </el-button>
+          <el-button size="mini" @click="handleModifyStatus(row)">
+            {{ $t('table.delete') }}
           </el-button>
         </template>
       </el-table-column>
@@ -57,10 +50,7 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="120px" style="width: 400px; margin-left:50px;">
         <el-form-item :label="$t('roles.name')" prop="name">
-          <el-input v-model="temp.name" />
-        </el-form-item>
-        <el-form-item :label="$t('roles.description')" prop="description">
-          <el-input v-model="temp.description" />
+          <el-input v-model="temp.role_name" />
         </el-form-item>
         <el-form-item :label="$t('roles.permission_nodes')" prop="permission_nodes">
           <el-tree ref="tree2" :data="permissionList" :props="defaultProps" show-checkbox node-key="id" :default-expanded-keys="checkeds" :default-checked-keys="checkeds" @check-change="handleCheckChange" />
@@ -128,7 +118,7 @@ export default {
       checkeds: [],
       defaultProps: {
         children: 'children',
-        label: 'label'
+        label: 'title'
       },
       permission_node: null,
       permissionList: null,
@@ -175,18 +165,14 @@ export default {
   },
   methods: {
     handleCheckChange() {
-      const res = this.$refs.tree2.getCheckedNodes()
-      const arr = []
-      res.forEach((item) => {
-        arr.push(item.id)
-      })
-      this.permission_node = arr
+      const res = this.$refs.tree2.getCheckedKeys().concat(this.$refs.tree2.getHalfCheckedKeys())
+      this.permission_node = res
     },
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
-        this.list = response.data.items['role']
-        this.permissionList = response.data.items['permission']
+        this.list = response.data.roles
+        this.permissionList = response.data.permissions
         this.total = response.data.total
         // Just to simulate the time of the request
         this.listLoading = false
@@ -205,11 +191,11 @@ export default {
     },
     handleModifyStatus(row) {
       updateCardStatus({ id: row.id }).then(response => {
+        this.getList()
         this.$message({
           message: '操作成功',
           type: 'success'
         })
-        row.status = row.status === 0 ? 1 : 0
       })
     },
     sortChange(data) {
@@ -262,14 +248,29 @@ export default {
         }
       })
     },
+    checked(id, data, newArr) {
+      data.forEach(item => {
+        if (item.id === id) {
+          if (item.children.length === 0) {
+            newArr.push(item.id)
+          }
+        } else {
+          if (item.children.length !== 0) {
+            this.checked(id, item.children, newArr)
+          }
+        }
+      })
+    },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
-      const arrs = []
-      this.temp.permissions.forEach((item) => {
-        arrs.push(item.id)
+      var arr = this.temp.permission
+      var newArr = []
+      arr.forEach(item => {
+        this.checked(item.id, this.permissionList, newArr)
       })
-      this.checkeds = arrs
-      if (arrs.length === 0) {
+      this.checkeds = newArr
+      console.log(newArr)
+      if (newArr.length === 0) {
         this.$nextTick(() => {
           this.$refs.tree2.setCheckedKeys([])
         })
