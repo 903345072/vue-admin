@@ -1,21 +1,5 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
-      <el-input v-model="listQuery.username" :placeholder="$t('table.uname')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.status" :placeholder="$t('table.status')" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item | cnStatus" :value="item" />
-      </el-select>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        {{ $t('table.search') }}
-      </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
-        {{ $t('table.add') }}
-      </el-button>
-      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        {{ $t('table.export') }}
-      </el-button>
-    </div>
-
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -26,91 +10,34 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column :label="$t('table.id')" prop="id" sortable="custom" align="center" width="80" :class-name="getSortClass('id')">
+      <el-table-column :label="$t('interest.heyue_name')" width="300px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
+          <span>{{ scope.row.hname }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.date')" width="200px" align="center">
+      <el-table-column :label="$t('interest.leverage_name')" width="300px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.created_at }}</span>
+          <span>{{ scope.row.lname }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.uname')" min-width="250px">
-        <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.username }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.status')" class-name="status-col" width="100">
-        <template slot-scope="{row}">
-          <el-tag :type="row.status | statusFilter">
-            {{ row.status | cnStatus }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.actions')" align="center" width="430" class-name="small-padding fixed-width">
-        <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
-            {{ $t('table.edit') }}
-          </el-button>
-          <el-button size="mini" :type="row.status | statusFilter" @click="handleModifyStatus(row,'published')">
-            {{ row.status | opStatus }}
-          </el-button>
+      <el-table-column :label="$t('interest.rate')" min-width="250" align="center">
+        <template slot-scope="scope">
+          <el-input v-model="scope.row.rate" style="width: 200px;" class="filter-item" onkeyup="value=value.replace(/[^\d^\.]/g,'')" @input="handleFilter(scope.row.rate,scope.row.hid,scope.row.lid)" @keyup.enter.native="handleFilter(scope.row.rate,scope.row.hid,scope.row.lid)" />
         </template>
       </el-table-column>
     </el-table>
-
-    <pagination v-show="total>0" :total="total" :page-sizes="[10,20,50]" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item :label="$t('table.uname')" prop="username" :rules="[{ required: true, message: '请输入用户名', trigger: 'blur' }]">
-          <el-input v-model="temp.username" />
-        </el-form-item>
-        <el-form-item :label="$t('table.passwd')" prop="passwd">
-          <el-input v-model="temp.password" />
-        </el-form-item>
-        <el-form-item :label="$t('table.status')">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item | cnStatus" :value="item" />
-          </el-select>
-        </el-form-item>
-        <el-form-item :label="$t('table.role')" prop="role">
-          <el-checkbox v-model="checkAll" :indeterminate="isIndeterminate" @change="handleCheckAllChange">全选</el-checkbox>
-          <div style="margin: 15px 0;" />
-          <el-checkbox-group v-model="checkedroles" @change="handleCheckedrolesChange">
-            <el-checkbox v-for="city in roles" :key="city.id" :label="city.id">{{ city.role_name }}</el-checkbox>
-          </el-checkbox-group>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">
-          {{ $t('table.cancel') }}
-        </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          {{ $t('table.confirm') }}
-        </el-button>
-      </div>
-    </el-dialog>
-
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel" />
-        <el-table-column prop="pv" label="Pv" />
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">{{ $t('table.confirm') }}</el-button>
-      </span>
-    </el-dialog>
+    <div style="width: 100%;display: flex;justify-content: center;margin-top: 30px;">
+      <el-button v-permission="['/interest/setInterest']" v-waves :loading="downloadLoading" class="filter-item" type="primary" @click="saveInterest">
+        {{ $t('table.save') }}
+      </el-button>
+    </div>
   </div>
 </template>
 
 <script>
-import { fetchList, fetchPv, createArticle, updateArticle, updateAdminStatus } from '@/api/article'
+import { fetchList, createLeverage, updateLeverage, updateLeverageStatus, setInterest } from '@/api/interest'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
-import Pagination from '@/components/Pagination'
-import { Message } from 'element-ui' // secondary package based on el-pagination
 
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
@@ -126,27 +53,26 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 
 export default {
   name: 'ComplexTable',
-  components: { Pagination },
   directives: { waves },
   filters: {
     statusFilter(status) {
       const statusMap = {
-        1: 'success',
-        0: 'danger'
+        0: 'success',
+        1: 'danger'
       }
       return statusMap[status]
     },
     cnStatus(status) {
       const statusMap_ = {
-        0: '无效',
-        1: '有效'
+        0: '有效',
+        1: '无效'
       }
       return statusMap_[status]
     },
     opStatus(status) {
       const statusMap_ = {
-        0: '恢复',
-        1: '冻结'
+        0: '禁用',
+        1: '恢复'
       }
       return statusMap_[status]
     },
@@ -167,9 +93,9 @@ export default {
       listQuery: {
         page: 1,
         limit: 10,
-        username: undefined,
+        name: undefined,
         sort: '+id',
-        status: undefined
+        is_deleted: undefined
       },
       importanceOptions: [0, 1],
       calendarTypeOptions,
@@ -197,9 +123,20 @@ export default {
     }
   },
   created() {
+    console.log(this.$store.state.user.routelist)
     this.getList()
   },
   methods: {
+    saveInterest() {
+      var data = this.list
+      setInterest({ data: data }).then(response => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        this.getList()
+      })
+    },
     getcheckedroles(roles_) {
       var arr_ = []
       roles_.forEach(function(k, v) {
@@ -227,23 +164,19 @@ export default {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
         this.list = response.data.items
-        this.total = response.data.count
-        this.roles = response.data.roles
-        // Just to simulate the time of the request
         this.listLoading = false
       })
     },
-    handleFilter() {
-      this.listQuery.page = 1
-      this.getList()
+    handleFilter(rate, hid, lid) {
+      console.log(this.list)
     },
     handleModifyStatus(row) {
-      updateAdminStatus({ id: row.id, status: row.status === 0 ? 1 : 0 }).then(response => {
+      updateLeverageStatus({ id: row.id, is_deleted: row.is_deleted === 0 ? 1 : 0 }).then(response => {
         this.$message({
           message: '操作成功',
           type: 'success'
         })
-        row.status = row.status === 0 ? 1 : 0
+        row.is_deleted = row.is_deleted === 0 ? 1 : 0
       })
     },
     sortChange(data) {
@@ -258,7 +191,6 @@ export default {
       } else {
         this.listQuery.sort = '-id'
       }
-      this.handleFilter()
     },
     resetTemp() {
       this.temp = {
@@ -278,16 +210,7 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          if (this.temp.password === undefined) {
-            Message({
-              message: '请输入密码' || 'Error',
-              type: 'error',
-              duration: 5 * 1000
-            })
-            return
-          }
-          this.temp.role_node = this.checkedroles
-          createArticle(this.temp).then((res) => {
+          createLeverage(this.temp).then((res) => {
             this.temp.id = res.data.id
             this.dialogFormVisible = false
             this.getList()
@@ -305,7 +228,6 @@ export default {
       this.temp = Object.assign({}, row) // copy obj
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
-      this.checkedroles = this.getcheckedroles(row.role)
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
@@ -314,8 +236,7 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
-          tempData.role_node = this.checkedroles
-          updateArticle(tempData).then(() => {
+          updateLeverage(tempData).then(() => {
             delete this.temp.passwd
             for (const v of this.list) {
               if (v.id === this.temp.id) {
@@ -345,12 +266,6 @@ export default {
       })
       const index = this.list.indexOf(row)
       this.list.splice(index, 1)
-    },
-    handleFetchPv(pv) {
-      fetchPv(pv).then(response => {
-        this.pvData = response.data.pvData
-        this.dialogPvVisible = true
-      })
     },
     handleDownload() {
       this.downloadLoading = true

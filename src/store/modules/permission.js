@@ -57,14 +57,17 @@ const actions = {
 }
 
 function dataArrayToRoutes(data) {
-  console.log(data)
   const res = []
   data.forEach(item => {
     const tmp = { ...item }
     if (tmp.component === 'Layout') {
-      console.log(tmp.component)
       tmp.component = Layout
+      tmp.meta.icon = 'dashboard'
+      tmp.alwaysShow = true
+      tmp.meta.affix = false
     } else {
+      tmp.meta.icon = 'guide'
+      tmp.name = 'name'
       let sub_view = tmp.component
       sub_view = sub_view.replace(/^\/*/g, '')
       tmp.component = (resolve) => require([`@/views/${sub_view}`], resolve)

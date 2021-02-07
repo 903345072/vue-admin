@@ -63,6 +63,12 @@
         <el-form-item :label="$t('permissions.path')" prop="price_max">
           <el-input v-model="temp.path" />
         </el-form-item>
+        <el-form-item :label="$t('permissions.displayed_left')" prop="price_max">
+          <template>
+            <el-radio v-model="radio" label="1">是</el-radio>
+            <el-radio v-model="radio" label="0">否</el-radio>
+          </template>
+        </el-form-item>
         <el-form-item :label="$t('permissions.parent_id')" prop="title">
           <el-cascader v-model="ddd" :options="list" :show-all-levels="false" :props="optionProps" @change="getParentId" />
         </el-form-item>
@@ -125,6 +131,7 @@ export default {
   },
   data() {
     return {
+      radio: '1',
       typeOptions: [],
       ddd: [],
       optionProps: {
@@ -173,7 +180,7 @@ export default {
       rules: {
         type: [{ required: true, message: 'type is required', trigger: 'change' }],
         timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        title: [{}]
       },
       downloadLoading: false
     }
@@ -260,6 +267,7 @@ export default {
       })
     },
     createData() {
+      this.temp.displayed_left = this.radio
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           createPermission(this.temp).then((res) => {
@@ -282,6 +290,7 @@ export default {
       this.temp = Object.assign({}, row) // copy obj
       this.dialogStatus = 'update'
       this.getList()
+      this.radio = row.displayed_left
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
@@ -310,6 +319,7 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
+          tempData.displayed_left = this.radio
           updatePermission(tempData).then(() => {
             for (const v of this.list) {
               if (v.id === this.temp.id) {

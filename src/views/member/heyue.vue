@@ -1,7 +1,10 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.role_name" :placeholder="$t('roles.name')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.username" :placeholder="$t('heyue.username')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-select v-model="listQuery.apply_state" :placeholder="$t('heyue.state')" clearable style="width: 90px" class="filter-item">
+        <el-option v-for="item in importanceOptions" :key="item" :label="item | cnStatus" :value="item" />
+      </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         {{ $t('table.search') }}
       </el-button>
@@ -23,63 +26,94 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column :label="$t('table.id')" prop="id" sortable="custom" align="center" width="80" :class-name="getSortClass('id')">
+      <el-table-column :label="$t('table.id')" prop="id" sortable="custom" align="center" width="100px" :class-name="getSortClass('id')">
         <template slot-scope="scope">
           <span>{{ scope.row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('roles.name')">
-        <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.role_name }}</span>
+      <el-table-column :label="$t('heyue.username')" width="200px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.member.username }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.actions')" width="400" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('heyue.total_capital')" width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.total_capital }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('heyue.deposit')" width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.deposit }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('heyue.leverage_money')" width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.leverage_money }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('heyue.loss_warning_line')" width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.loss_warning_line }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('heyue.loss_sell_line')" width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.loss_sell_line }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('heyue.interest_rate')" width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.interest_rate }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('heyue.interest')" width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.interest }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('heyue.state')" class-name="status-col" width="100px">
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
-            {{ $t('table.edit') }}
+          <el-tag :type="row.apply_state | statusFilter">
+            {{ row.apply_state | cnStatus }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('heyue.capital_used_time')" width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.capital_used_time }}天</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('heyue.repare_capital')" width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.repare_capital }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('heyue.apply_time')" width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.apply_time }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('heyue.apply_state')" align="center" min-width="150px" class-name="small-padding fixed-width">
+        <template slot-scope="{row}">
+          <el-button v-if="row.apply_state === 0" size="mini" :type="'success'" @click="handleModifyStatus(row,1,'published')">
+            通过
           </el-button>
-          <el-button size="mini" @click="handleModifyStatus(row)">
-            {{ $t('table.delete') }}
+          <el-button v-if="row.apply_state === 0" size="mini" :type="'danger'" @click="handleModifyStatus(row,3,'published')">
+            拒绝
+          </el-button>
+          <el-button v-if="row.apply_state !== 0" size="mini" :type="row.apply_state | statusFilter ">
+            {{ row.apply_state | cnStatus }}
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page-sizes="[10,20,50]" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="120px" style="width: 400px; margin-left:50px;">
-        <el-form-item :label="$t('roles.name')" prop="name">
-          <el-input v-model="temp.role_name" />
-        </el-form-item>
-        <el-form-item :label="$t('roles.permission_nodes')" prop="permission_nodes">
-          <el-tree ref="tree2" :data="permissionList" :props="defaultProps" show-checkbox node-key="id" :default-expanded-keys="checkeds" :default-checked-keys="checkeds" @check-change="handleCheckChange" />
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">
-          {{ $t('table.cancel') }}
-        </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          {{ $t('table.confirm') }}
-        </el-button>
-      </div>
-    </el-dialog>
-
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel" />
-        <el-table-column prop="pv" label="Pv" />
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">{{ $t('table.confirm') }}</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
 <script>
-import { fetchList, createCard, updateRole, updateCardStatus } from '@/api/Roles'
+import { fetchList, createHeYue, updateHeYue, updateHeYueStatus } from '@/api/Member'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -91,23 +125,40 @@ const calendarTypeOptions = [
   { key: 'EU', display_name: 'Eurozone' }
 ]
 
-// arr to obj, such as { CN : "China", US : "USA" }
 const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
   acc[cur.key] = cur.display_name
   return acc
 }, {})
 
 export default {
-  name: 'Role',
+  name: 'ComplexTable',
   components: { Pagination },
   directives: { waves },
   filters: {
     statusFilter(status) {
-      const statusMap1 = {
-        0: 'success',
-        1: 'danger'
+      const statusMap = {
+        0: 'primary',
+        1: 'success',
+        2: 'warning',
+        3: 'danger'
       }
-      return statusMap1[status]
+      return statusMap[status]
+    },
+    cnStatus(status) {
+      const statusMap_ = {
+        0: '申请中',
+        1: '有效',
+        2: '已过期',
+        3: '已拒绝'
+      }
+      return statusMap_[status]
+    },
+    opStatus(status) {
+      const statusMap_ = {
+        0: '通过',
+        1: '恢复'
+      }
+      return statusMap_[status]
     },
     typeFilter(type) {
       return calendarTypeKeyValue[type]
@@ -115,13 +166,10 @@ export default {
   },
   data() {
     return {
-      checkeds: [],
-      defaultProps: {
-        children: 'children',
-        label: 'title'
-      },
-      permission_node: null,
-      permissionList: null,
+      checkedroles: [],
+      isIndeterminate: true,
+      checkAll: false,
+      roles: [],
       tableKey: 0,
       list: null,
       total: 0,
@@ -129,20 +177,18 @@ export default {
       listQuery: {
         page: 1,
         limit: 10,
+        username: undefined,
         sort: '+id',
-        status: undefined,
-        price: undefined,
-        created_at: undefined
+        apply_state: undefined
       },
+      importanceOptions: [0, 1, 2, 3],
       calendarTypeOptions,
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       statusOptions: [0, 1],
-      seatOpenOptions: [0, 1],
-      seatTypeOptions: [0, 1, 2],
       showReviewer: false,
       temp: {
         id: undefined,
-        status: 0
+        status: 1
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -164,38 +210,48 @@ export default {
     this.getList()
   },
   methods: {
-    handleCheckChange() {
-      const res = this.$refs.tree2.getCheckedKeys().concat(this.$refs.tree2.getHalfCheckedKeys())
-      this.permission_node = res
+    getcheckedroles(roles_) {
+      var arr_ = []
+      roles_.forEach(function(k, v) {
+        arr_.push(k['id'])
+      })
+      return arr_
+    },
+    handleCheckAllChange(val) {
+      var arr = []
+      if (val) {
+        this.roles.forEach(function(k, v) {
+          arr.push(k['id'])
+        })
+      }
+      this.checkedroles = val ? arr : []
+      this.isIndeterminate = false
+    },
+    handleCheckedrolesChange(value) {
+      const checkedCount = value.length
+      this.checkAll = checkedCount === this.roles.length
+      this.checkedroles = value
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.roles.length
     },
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
-        this.list = response.data.roles
-        this.permissionList = response.data.permissions
-        this.total = response.data.total
-        // Just to simulate the time of the request
+        this.list = response.data.items
+        this.total = response.data.count
         this.listLoading = false
       })
-    },
-    opStatus(is_open) {
-      const statusMap_3 = {
-        0: '关闭',
-        1: '开启'
-      }
-      return statusMap_3[is_open]
     },
     handleFilter() {
       this.listQuery.page = 1
       this.getList()
     },
-    handleModifyStatus(row) {
-      updateCardStatus({ id: row.id }).then(response => {
-        this.getList()
+    handleModifyStatus(row, state) {
+      updateHeYueStatus({ id: row.id, apply_state: state }).then(response => {
         this.$message({
           message: '操作成功',
           type: 'success'
         })
+        row.apply_state = state
       })
     },
     sortChange(data) {
@@ -214,6 +270,7 @@ export default {
     },
     resetTemp() {
       this.temp = {
+        status: 1,
         id: undefined
       }
     },
@@ -221,26 +278,21 @@ export default {
       this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
+      this.checkedroles = []
       this.$nextTick(() => {
-        this.$refs.tree2.setCheckedKeys([])
         this.$refs['dataForm'].clearValidate()
       })
     },
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.temp.permission_node = this.permission_node
-          createCard(this.temp).then((res) => {
+          createHeYue(this.temp).then((res) => {
             this.temp.id = res.data.id
-            this.list.unshift(this.temp)
             this.dialogFormVisible = false
             this.getList()
-            this.$nextTick(() => {
-              this.$refs.tree2.setCheckedKeys([])
-            })
             this.$notify({
               title: '成功',
-              message: '创建成功',
+              message: '创建成功.',
               type: 'success',
               duration: 2000
             })
@@ -248,53 +300,20 @@ export default {
         }
       })
     },
-    checked(id, data, newArr) {
-      data.forEach(item => {
-        if (item.id === id) {
-          if (item.children.length === 0) {
-            newArr.push(item.id)
-          }
-        } else {
-          if (item.children.length !== 0) {
-            this.checked(id, item.children, newArr)
-          }
-        }
-      })
-    },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
-      var arr = this.temp.permission
-      var newArr = []
-      arr.forEach(item => {
-        this.checked(item.id, this.permissionList, newArr)
-      })
-      this.checkeds = newArr
-      console.log(newArr)
-      console.log(arr)
-      if (newArr.length === 0) {
-        this.$nextTick(() => {
-          this.$refs.tree2.setCheckedKeys([])
-        })
-      }
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
     },
-    cnStatus(status) {
-      const statusMap_15 = {
-        0: '开启',
-        1: '关闭'
-      }
-      return statusMap_15[status]
-    },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
-          tempData.permission_node = this.permission_node
-          updateRole(tempData).then(() => {
+          updateHeYue(tempData).then(() => {
+            delete this.temp.passwd
             for (const v of this.list) {
               if (v.id === this.temp.id) {
                 const index = this.list.indexOf(v)
@@ -302,14 +321,11 @@ export default {
                 break
               }
             }
-            this.getList()
-            this.$nextTick(() => {
-              this.$refs.tree2.setCheckedKeys([])
-            })
             this.dialogFormVisible = false
+            this.getList()
             this.$notify({
               title: '成功',
-              message: '更新成功',
+              message: '更新成功.',
               type: 'success',
               duration: 2000
             })
@@ -330,15 +346,9 @@ export default {
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['id', '座位编号', '每小时价格', '封顶价', '座位级别', '是否开启', '座位状态']
-        const filterVal = ['id', 'name', 'price', 'price_max', 'seat_type', 'seat_open', 'status']
-        const list_ = this.list
-        for (var i = 0, l = list_.length; i < l; i++) {
-          list_[i]['seat_type'] = this.cnType(list_[i]['seat_type'])
-          list_[i]['seat_open'] = this.cnOpen(list_[i]['seat_open'])
-          list_[i]['status'] = this.cnStatus(list_[i]['status'])
-        }
-        const data = this.formatJson(filterVal, list_)
+        const tHeader = ['id', '创建时间', '用户名', '状态']
+        const filterVal = ['id', 'created_at', 'username', 'status']
+        const data = this.formatJson(filterVal, this.list)
         excel.export_json_to_excel({
           header: tHeader,
           data,

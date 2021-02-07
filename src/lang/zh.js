@@ -135,7 +135,9 @@ export default {
     cancel: '取 消',
     confirm: '确 定',
     uname: '用户名',
-    passwd: '密码'
+    passwd: '密码',
+    role: '角色',
+    save: '保存'
   },
   seats: {
     name: '座位编号',
@@ -155,6 +157,7 @@ export default {
     created_at: '创建时间'
   },
   permissions: {
+    displayed_left: '是否展示左侧',
     component: '组件地址',
     url: '接口地址',
     title: '展示名称',
@@ -206,5 +209,32 @@ export default {
     tagsView: '开启 Tags-View',
     fixedHeader: '固定 Header',
     sidebarLogo: '侧边栏 Logo'
+  },
+  heyue: {
+    name: '合约名称',
+    is_deleted: '状态',
+    base_num: '使用期限',
+    state: '状态',
+    username: '用户名',
+    total_capital: '总配资金额',
+    deposit: '保证金',
+    leverage_money: '申请金额',
+    loss_warning_line: '亏损预警线',
+    loss_sell_line: '亏损平仓线',
+    interest_rate: '利率',
+    interest: '利息',
+    capital_used_time: '资金使用时间',
+    repare_capital: '准备资金',
+    apply_state: '资金状态/操作',
+    apply_time: '申请时间'
+  },
+  leverage: {
+    name: '杠杆名称',
+    is_deleted: '状态'
+  },
+  interest: {
+    heyue_name: '合约',
+    leverage_name: '杠杆',
+    rate: '利息'
   }
 }

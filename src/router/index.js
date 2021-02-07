@@ -68,6 +68,7 @@ export const constantRoutes = [
   {
     path: '/',
     component: Layout,
+    hidden: true,
     redirect: '/dashboard',
     children: [
       {
@@ -79,21 +80,21 @@ export const constantRoutes = [
     ]
   },
 
-  {
-    path: '/admin',
-    component: Layout,
-    redirect: '/HellowWorld',
-    alwaysShow: true,
-    meta: { title: '管理员管理', icon: 'people', affix: true },
-    children: [
-      {
-        path: 'HellowWorld',
-        component: () => import('@/views/HellowWorld/index'),
-        name: 'HellowWorld',
-        meta: { title: '管理员列表', icon: 'dashboard', affix: true }
-      }
-    ]
-  },
+  // {
+  //   path: '/admin',
+  //   component: Layout,
+  //   redirect: '/HellowWorld',
+  //   alwaysShow: true,
+  //   meta: { title: '管理员管理', icon: 'people', affix: true },
+  //   children: [
+  //     {
+  //       path: 'HellowWorld',
+  //       component: () => import('@/views/HellowWorld/index'),
+  //       name: 'HellowWorld',
+  //       meta: { title: '管理员列表', icon: 'dashboard', affix: true }
+  //     }
+  //   ]
+  // },
   // {
   //   path: '/rbac',
   //   component: Layout,
@@ -116,21 +117,23 @@ export const constantRoutes = [
   //
   //   ]
   // },
-  {
-    path: '/documentation',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/documentation/index'),
-        name: 'Documentation',
-        meta: { title: 'documentation', icon: 'documentation', affix: true }
-      }
-    ]
-  },
+  // {
+  //   path: '/documentation',
+  //   component: Layout,
+  //   hidden: true,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       component: () => import('@/views/documentation/index'),
+  //       name: 'Documentation',
+  //       meta: { title: 'documentation', icon: 'documentation', affix: true }
+  //     }
+  //   ]
+  // },
   {
     path: '/guide',
     component: Layout,
+    hidden: true,
     redirect: '/guide/index',
     children: [
       {

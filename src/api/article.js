@@ -26,7 +26,7 @@ export function fetchPv(pv) {
 
 export function createArticle(data) {
   return request({
-    url: '/admin/addAdmin',
+    url: '/user/addUser',
     method: 'post',
     data
   })
@@ -34,7 +34,7 @@ export function createArticle(data) {
 
 export function updateArticle(data) {
   return request({
-    url: '/admin/updateAdmin',
+    url: '/user/updateUser',
     method: 'post',
     data
   })
@@ -42,7 +42,7 @@ export function updateArticle(data) {
 
 export function updateAdminStatus(data) {
   return request({
-    url: '/admin/updateAdminStatus',
+    url: '/user/updateStatus',
     method: 'post',
     data
   })
